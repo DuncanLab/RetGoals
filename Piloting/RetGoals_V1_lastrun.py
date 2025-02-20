@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 This experiment was created using PsychoPy3 Experiment Builder (v2022.2.5),
-    on Tue Feb 18 13:43:41 2025
+    on Wed Feb 19 09:13:22 2025
 If you publish work using this script the most relevant publication is:
 
     Peirce J, Gray JR, Simpson S, MacAskill M, Höchenberger R, Sogo H, Kastman E, Lindeløv JK. (2019) 
@@ -1504,7 +1504,6 @@ shuffle(ret_shuf9)
 ret_shuf10 = shuffled_order[245:255]
 shuffle(ret_shuf10)
 ret_shuffled_order = ret_shuf_prac + ret_shuf1 + ret_shuf2 + ret_shuf3 + ret_shuf4 + ret_shuf5 + ret_shuf6 + ret_shuf7 + ret_shuf8 + ret_shuf9 + ret_shuf10
-print(ret_shuffled_order)
 # keep track of which components have finished
 StimShuffleComponents = []
 for thisComponent in StimShuffleComponents:
