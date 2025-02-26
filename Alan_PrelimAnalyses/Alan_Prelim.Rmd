@@ -1,0 +1,84 @@
+---
+title: "Alan_Prelim"
+output: html_document
+date: "2025-02-26"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+enc_evs <- read.csv('/Users/matthewdougherty/Desktop/Projects/RetGoals_Git/Alan_PrelimAnalyses/all_enc_matt.csv')
+ret_evs <- read.csv('/Users/matthewdougherty/Desktop/Projects/RetGoals_Git/Alan_PrelimAnalyses/all_ret_matt.csv')
+```
+
+```{r}
+enc_evs$include <- 0
+enc_evs$include[enc_evs$BvsPI_condition == 'First_pres'] <- 1
+enc_evs$include[enc_evs$BvsPI_condition == 'First_pres_restudy'] <- 1
+
+ret_evs$include <- 0
+ret_evs$include[ret_evs$BvsPI_condition == 'First_pres'] <- 1
+ret_evs$include[ret_evs$BvsPI_condition == 'First_pres_restudy'] <- 1
+```
+
+```{r}
+enc_evs <- subset(enc_evs, include == 1)
+ret_evs <- subset(ret_evs, include == 1)
+```
+
+```{r}
+enc_evs <- separate(enc_evs, blockcode, c('blockcode', 'true_block'), sep = 6)
+ret_evs <- separate(ret_evs, blockcode, c('blockcode', 'true_block'), sep = 6)
+```
+
+```{r}
+enc_evs$enc_trialnum <- enc_evs$trialnum
+ret_evs$ret_trialnum <- ret_evs$trialnum
+```
+
+```{r}
+ret_evs <- subset(ret_evs, select = c('subject', 'true_block', 'ret_trialnum', 'stim_name', 
+                                      'memory_ans', 'latency', 'Adjusted_SOA', 
+                                      'memory_test_result', 'task', 'swst'))
+
+enc_evs <- subset(enc_evs, select = c('subject', 'true_block', 'enc_trialnum', 'stim_name'))
+```
+
+```{r}
+ret_evs <- merge(ret_evs, enc_evs, by = c('subject', 'true_block', 'stim_name'), all=T)
+```
+
+```{r}
+enc_plot_data <-
+  ret_evs %>% 
+  group_by(true_block, enc_trialnum) %>% 
+  summarise(enc_perf = mean(memory_test_result)) %>% 
+  ungroup()
+
+enc_plot_data$trialnum <- enc_plot_data$enc_trialnum
+```
+
+```{r}
+ret_plot_data <-
+  ret_evs %>% 
+  group_by(true_block, ret_trialnum) %>% 
+  summarise(ret_perf = mean(memory_test_result)) %>% 
+  ungroup()
+
+ret_plot_data$trialnum <- ret_plot_data$ret_trialnum
+```
+
+```{r}
+plot_data <- merge(ret_plot_data, enc_plot_data, by = c('true_block', 'trialnum'), all = T)
+```
+
+```{r}
+plot_test <- pivot_longer(plot_data, cols = c('enc_perf', 'ret_perf'), names_to = 'task')
+```
+
+```{r}
+ggplot(plot_test, aes(x = trialnum, y = value, color = task)) + geom_line()
+```

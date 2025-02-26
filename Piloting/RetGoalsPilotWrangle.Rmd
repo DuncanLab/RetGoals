@@ -1,0 +1,164 @@
+---
+title: "RetGoalsPilotWrangle"
+output: html_document
+date: "2025-02-24"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data Wrangling
+
+```{r}
+library(tidyverse)
+fns <- list.files(path = "/Users/matthewdougherty/Desktop/Projects/RetGoals_Git/Piloting/data", pattern = "\\_001.csv$", full.names = TRUE)
+data <- data.frame()
+for (fn in fns) {
+  df <- read.csv(fn)
+  df <- subset(df, select = c('Blocks40.thisRepN', 'EATrialsBlocks40.thisRepN', 'EncTrialsBlocks40.thisRepN', 'IATrialsBlocks40.thisRepN', 'RetTrialsBlocks40.thisRepN', 'Blocks10.thisRepN', 'EATrialsBlocks10.thisRepN', 'EncTrialsBlocks10.thisRepN', 'IATrialsBlocks10.thisRepN', 'RetTrialsBlocks10.thisRepN', 'corr_key', 'stim_name', 'magnitude', 'stim_spec', 'num_big', 'has_neg', 'EATrialResp.keys', 'EATrialResp.corr', 'EATrialResp.rt', 'has_neg', 'IATrialResp.keys', 'IATrialResp.corr', 'IATrialResp.rt', 'EncTrialResp.keys', 'EncTrialResp.corr', 'EncTrialResp.rt', 'enc_stimname', 'RetTrialResp.keys', 'RetTrialResp.corr', 'RetTrialResp.rt', 'participant', 'session', 'expName', 'psychopyVersion'))
+  data <- rbind(data, df)
+}
+```
+
+```{r}
+data$block_type <- ''
+data$Blocks40.thisRepN <- data$Blocks40.thisRepN + 1
+data$Blocks10.thisRepN <- data$Blocks10.thisRepN + 1
+data$Blocks10.thisRepN <- data$Blocks10.thisRepN + 5
+data$Blocks40.thisRepN[is.na(data$Blocks40.thisRepN) == T] <- 0
+data$block_type[data$Blocks40.thisRepN == 0] <- '10'
+data$Blocks10.thisRepN[is.na(data$Blocks10.thisRepN) == T] <- 0
+data$block_type[data$Blocks10.thisRepN == 0] <- '40'
+data$block_num <- data$Blocks10.thisRepN + data$Blocks40.thisRepN
+
+data$EATrialsBlocks40.thisRepN <- data$EATrialsBlocks40.thisRepN + 1
+data$EATrialsBlocks40.thisRepN[is.na(data$EATrialsBlocks40.thisRepN) == T] <- 0
+data$EncTrialsBlocks40.thisRepN <- data$EncTrialsBlocks40.thisRepN + 1
+data$EncTrialsBlocks40.thisRepN[is.na(data$EncTrialsBlocks40.thisRepN) == T] <- 0
+data$IATrialsBlocks40.thisRepN <- data$IATrialsBlocks40.thisRepN + 1
+data$IATrialsBlocks40.thisRepN[is.na(data$IATrialsBlocks40.thisRepN) == T] <- 0
+data$RetTrialsBlocks40.thisRepN <- data$RetTrialsBlocks40.thisRepN + 1
+data$RetTrialsBlocks40.thisRepN[is.na(data$RetTrialsBlocks40.thisRepN) == T] <- 0
+data$EATrialsBlocks10.thisRepN <- data$EATrialsBlocks10.thisRepN + 1
+data$EATrialsBlocks10.thisRepN[is.na(data$EATrialsBlocks10.thisRepN) == T] <- 0
+data$EncTrialsBlocks10.thisRepN <- data$EncTrialsBlocks10.thisRepN + 1
+data$EncTrialsBlocks10.thisRepN[is.na(data$EncTrialsBlocks10.thisRepN) == T] <- 0
+data$IATrialsBlocks10.thisRepN <- data$IATrialsBlocks10.thisRepN + 1
+data$IATrialsBlocks10.thisRepN[is.na(data$IATrialsBlocks10.thisRepN) == T] <- 0
+data$RetTrialsBlocks10.thisRepN <- data$RetTrialsBlocks10.thisRepN + 1
+data$RetTrialsBlocks10.thisRepN[is.na(data$RetTrialsBlocks10.thisRepN) == T] <- 0
+data$trial_num <- data$EATrialsBlocks40.thisRepN + data$EncTrialsBlocks40.thisRepN + 
+                        data$IATrialsBlocks40.thisRepN + data$RetTrialsBlocks40.thisRepN + 
+                        data$EATrialsBlocks10.thisRepN + data$EncTrialsBlocks10.thisRepN + 
+                        data$IATrialsBlocks10.thisRepN + data$RetTrialsBlocks10.thisRepN
+
+data$EATrialResp.corr[is.na(data$EATrialResp.corr) == T] <- 0
+data$EncTrialResp.corr[is.na(data$EncTrialResp.corr) == T] <- 0
+data$IATrialResp.corr[is.na(data$IATrialResp.corr) == T] <- 0
+data$RetTrialResp.corr[is.na(data$RetTrialResp.corr) == T] <- 0
+data$corr <- data$EATrialResp.corr + data$EncTrialResp.corr + data$IATrialResp.corr +
+  data$RetTrialResp.corr
+
+data$resp <- paste(data$EATrialResp.keys, data$EncTrialResp.keys, data$IATrialResp.keys, data$RetTrialResp.keys)
+data$resp <- as.numeric(data$resp)
+
+data$EATrialResp.rt[is.na(data$EATrialResp.rt) == T] <- 0
+data$EncTrialResp.rt[is.na(data$EncTrialResp.rt) == T] <- 0
+data$IATrialResp.rt[is.na(data$IATrialResp.rt) == T] <- 0
+data$RetTrialResp.rt[is.na(data$RetTrialResp.rt) == T] <- 0
+data$rt <- data$EATrialResp.rt + data$EncTrialResp.rt + data$IATrialResp.rt +
+  data$RetTrialResp.rt
+data$rt[data$rt == 0] <- NA
+
+data$task <- 'Practice'
+data$task[(data$EATrialsBlocks40.thisRepN != 0) | (data$EATrialsBlocks10.thisRepN != 0)] <- 'External'
+data$task[(data$EncTrialsBlocks40.thisRepN != 0) | (data$EncTrialsBlocks10.thisRepN != 0)] <- 'Encoding'
+data$task[(data$IATrialsBlocks40.thisRepN != 0) | (data$IATrialsBlocks10.thisRepN != 0)] <- 'Internal'
+data$task[(data$RetTrialsBlocks40.thisRepN != 0) | (data$RetTrialsBlocks10.thisRepN != 0)] <- 'Retrieval'
+```
+
+```{r}
+enc_evs <- subset(data, task == 'Encoding', select = c('participant', 'block_num', 'trial_num', 'stim_name', 'task'))
+```
+
+```{r}
+ret_evs <- subset(data, task == 'Retrieval', select = c('participant', 'enc_stimname', 'corr'))
+ret_evs$stim_name <- ret_evs$enc_stimname
+```
+
+```{r}
+enc_evs <- merge(enc_evs, ret_evs, by = c('participant', 'stim_name'))
+enc_evs$ret_corr <- enc_evs$corr
+enc_evs <- subset(enc_evs, select = c('participant', 'block_num', 'trial_num', 'stim_name', 'task', 'ret_corr'))
+```
+
+```{r}
+data$encret_corr <- NA
+data$encret_corr[data$task == 'Encoding'] <- 0
+```
+
+```{r}
+data <- merge(data, enc_evs, by = c('participant', 'trial_num', 'block_num', 'stim_name', 'task'), all = T)
+```
+
+```{r}
+data$encret_corr[data$task == 'Encoding'] <- data$ret_corr[data$task == 'Encoding']
+```
+
+```{r}
+data <- subset(data, select = c('participant', 'session', 'expName', 'psychopyVersion',
+                                'block_num', 'trial_num', 'corr', 'resp', 'rt', 'task',
+                                'magnitude', 'num_big', 'has_neg', 'block_type', 'stim_name',
+                                'stim_spec', 'enc_stimname', 'corr_key', 'encret_corr'),
+               task != 'Practice')
+rownames(data) <- NULL
+write.csv(data, '/Users/matthewdougherty/Desktop/Projects/RetGoals_Git/Piloting/RetGoals_PilotData.csv')
+```
+
+## Summary Stats
+
+```{r}
+int_stat <-
+  data %>% 
+  subset(task == 'Internal') %>% 
+  group_by(participant, has_neg) %>% 
+  summarize(performance = mean(corr)) %>% 
+  ungroup()
+
+int_stat <- pivot_wider(int_stat, names_from = has_neg, values_from = performance)
+```
+
+```{r}
+summ_stats <- 
+  data %>% 
+  group_by(participant, task) %>% 
+  summarize(performance = mean(corr)) %>% 
+  ungroup()
+
+summ_stats <- pivot_wider(summ_stats, names_from = task, values_from = performance)
+```
+
+```{r}
+ret_stats <-
+  data %>%
+  group_by(task, stim_spec) %>% 
+  summarize(performance = mean(corr)) %>% 
+  ungroup()
+
+ret_stats <- pivot_wider(ret_stats, names_from = c('stim_spec', 'task'), values_from = performance)
+```
+
+## Plotting
+
+```{r}
+trial_perf <-
+  test_data %>% 
+  group_by(task, trial_num) %>% 
+  summarize(performance = mean(plot_corr)) %>% 
+  ungroup()
+```
+
+```{r}
+ggplot(trial_perf, aes(x=trial_num, y = performance, color = task)) + geom_line()
+```

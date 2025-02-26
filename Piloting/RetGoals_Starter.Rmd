@@ -1,0 +1,61 @@
+---
+title: "RetGoals_Starter"
+output: html_document
+date: "2025-02-24"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Read In Data
+
+```{r}
+#Start off with loading the tidyverse library. Make sure it is installed first
+library(tidyverse)
+
+#Read in the csv as a dataframe named "events". Change the filepath to wherever you placed the downloaded csv file
+events <- read.csv('/Users/matthewdougherty/Desktop/Projects/RetGoals_Git/Piloting/RetGoals_PilotData.csv')
+```
+
+## Generate Summary Stats
+
+For a pilot, and for any study, you want to have some basic descriptive statistics for the population. How well did people perform on each task? Did any particular information about the stimuli change task performance? How quick/how variable were responses? I've laid out an example of how to run one set of basic summary statistics- average performance on each task for each participant. Try to go line by line in this code and create other summary statistics, either for all tasks or for individual tasks.
+
+```{r}
+summary_stats <- 
+  events %>% 
+  group_by(participant, task) %>% 
+  summarize(performance = mean(corr)) %>% 
+  ungroup()
+```
+
+```{r}
+#Take a look at the dataframe created by the above code. It would be easier to visualize the performance if each task was its own column, rather than its own row. To do this, use the pivot_wider function
+summary_stats <- pivot_wider(summary_stats, names_from = task, values_from = performance)
+```
+
+What information can you take away from these averages? What other information would be helpful (ranges, standard deviations, etc.)? How does this inform what we will expect to see with the data?
+
+```{r}
+#Play around with creating some other summary statistics here
+```
+
+## Plotting
+
+We want to plot the performance of participants on each of our tasks as a function of the trial number. I've put an example of how to do this for the trial blocks where participants only had 10 trials, rather than 40. Try to create a plot for the 40 trial blocks, and then try to create a plot where the first 10 trials of all block types (40 and 10) are plotted. Then, try to create individual participant graphs.
+
+IMPORTANT: Note that I'm plotting performance on each of the tasks here, so encoding performance will be whether participants accurately discriminated whether an image was larger, smaller, or equal to another image. There is also a variable, encret_corr, which is whether the association shown at encoding was accurately retrieved during retrieval. Think of how you could plot this data instead of the size comparison (hint- you may need to create a new variable that has encret_corr for the encoding events, and corr for all other task events)
+
+```{r}
+trial_perf_10 <-
+  events %>% 
+  subset(block_type == 10) %>% 
+  group_by(task, trial_num) %>% 
+  summarize(performance = mean(corr)) %>% 
+  ungroup()
+```
+
+```{r}
+ggplot(trial_perf_10, aes(x=trial_num, y = performance, color = task)) + geom_line()
+```
