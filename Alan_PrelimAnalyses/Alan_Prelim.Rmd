@@ -6,6 +6,7 @@ date: "2025-02-26"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+108 & 42
 ```
 
 ```{r}
@@ -54,7 +55,7 @@ ret_evs <- merge(ret_evs, enc_evs, by = c('subject', 'true_block', 'stim_name'),
 ```{r}
 enc_plot_data <-
   ret_evs %>% 
-  group_by(true_block, enc_trialnum) %>% 
+  group_by(subject, true_block, enc_trialnum) %>% 
   summarise(enc_perf = mean(memory_test_result)) %>% 
   ungroup()
 
@@ -64,7 +65,7 @@ enc_plot_data$trialnum <- enc_plot_data$enc_trialnum
 ```{r}
 ret_plot_data <-
   ret_evs %>% 
-  group_by(true_block, ret_trialnum) %>% 
+  group_by(subject, true_block, ret_trialnum) %>% 
   summarise(ret_perf = mean(memory_test_result)) %>% 
   ungroup()
 
@@ -72,7 +73,7 @@ ret_plot_data$trialnum <- ret_plot_data$ret_trialnum
 ```
 
 ```{r}
-plot_data <- merge(ret_plot_data, enc_plot_data, by = c('true_block', 'trialnum'), all = T)
+plot_data <- merge(ret_plot_data, enc_plot_data, by = c('subject', 'true_block', 'trialnum'), all = T)
 ```
 
 ```{r}
@@ -80,5 +81,17 @@ plot_test <- pivot_longer(plot_data, cols = c('enc_perf', 'ret_perf'), names_to 
 ```
 
 ```{r}
-ggplot(plot_test, aes(x = trialnum, y = value, color = task)) + geom_line()
+ggplot(plot_test, aes(x = trialnum, y = value, color = task)) + stat_smooth()
+```
+
+```{r}
+ret_evs$Retrieval <- ret_evs$ret_trialnum
+ret_evs$Encoding <- ret_evs$enc_trialnum
+ret_evs$Accuracy <- ret_evs$memory_test_result
+evs_long <- pivot_longer(ret_evs, cols = c('Encoding', 'Retrieval'), names_to = 'Task')
+evs_long$Trial <- evs_long$value
+```
+
+```{r}
+ggplot(evs_long, aes(x = Trial, y = Accuracy, color = Task)) + stat_smooth() + theme(text = element_text(size = 16))
 ```

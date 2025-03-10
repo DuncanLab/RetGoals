@@ -119,6 +119,22 @@ write.csv(data, '/Users/matthewdougherty/Desktop/Projects/RetGoals_Git/Piloting/
 ## Summary Stats
 
 ```{r}
+library(tidyverse)
+data <- read.csv('/Users/matthewdougherty/Desktop/Projects/RetGoals_Git/Piloting/RetGoals_PilotData.csv')
+```
+
+```{r}
+ext_stat <- 
+  data %>% 
+  subset(task == 'External') %>% 
+  group_by(magnitude, num_big) %>% 
+  summarize(performance = mean(corr)) %>% 
+  ungroup()
+
+ext_stat <- pivot_wider(ext_stat, names_from = num_big, values_from = performance)
+```
+
+```{r}
 int_stat <-
   data %>% 
   subset(task == 'Internal') %>% 
@@ -152,8 +168,14 @@ ret_stats <- pivot_wider(ret_stats, names_from = c('stim_spec', 'task'), values_
 ## Plotting
 
 ```{r}
+data$plot_corr <- data$corr
+data$plot_corr[data$task == 'Encoding'] <- data$encret_corr[data$task == 'Encoding']
+```
+
+```{r}
 trial_perf <-
-  test_data %>% 
+  data %>% 
+  subset(task %in% c('Encoding', 'Retrieval') & trial_num <16) %>% 
   group_by(task, trial_num) %>% 
   summarize(performance = mean(plot_corr)) %>% 
   ungroup()

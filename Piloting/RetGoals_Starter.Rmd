@@ -25,7 +25,7 @@ For a pilot, and for any study, you want to have some basic descriptive statisti
 ```{r}
 summary_stats <- 
   events %>% 
-  group_by(participant, task) %>% 
+  group_by(task) %>% 
   summarize(performance = mean(corr)) %>% 
   ungroup()
 ```
@@ -48,14 +48,32 @@ We want to plot the performance of participants on each of our tasks as a functi
 IMPORTANT: Note that I'm plotting performance on each of the tasks here, so encoding performance will be whether participants accurately discriminated whether an image was larger, smaller, or equal to another image. There is also a variable, encret_corr, which is whether the association shown at encoding was accurately retrieved during retrieval. Think of how you could plot this data instead of the size comparison (hint- you may need to create a new variable that has encret_corr for the encoding events, and corr for all other task events)
 
 ```{r}
+events$learn_remember_perf <- events$corr
+events$learn_remember_perf[events$task == 'Encoding'] <- events$encret_corr[events$task == 'Encoding']
+```
+
+```{r}
+summary_stats <- 
+  events %>% 
+  group_by(task) %>% 
+  summarize(performance = mean(learn_remember_perf)) %>% 
+  ungroup()
+```
+
+```{r}
 trial_perf_10 <-
   events %>% 
-  subset(block_type == 10) %>% 
+  subset(block_type == 40) %>% 
   group_by(task, trial_num) %>% 
-  summarize(performance = mean(corr)) %>% 
+  summarize(performance = mean(learn_remember_perf)) %>% 
   ungroup()
 ```
 
 ```{r}
 ggplot(trial_perf_10, aes(x=trial_num, y = performance, color = task)) + geom_line()
+```
+
+```{r}
+events$plot_corr <- events$corr
+events$plot_corr[events$task == 'Encoding'] <- events$encret_corr[events$task == 'Encoding']
 ```
