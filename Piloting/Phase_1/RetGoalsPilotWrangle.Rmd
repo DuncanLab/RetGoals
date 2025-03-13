@@ -79,6 +79,13 @@ data$task[(data$RetTrialsBlocks40.thisRepN != 0) | (data$RetTrialsBlocks10.thisR
 ```
 
 ```{r}
+data$corr[(data$task == 'Retrieval') & (data$stim_spec == 'vehicle') & (data$corr_key!=3) & (data$resp == 3)] <- 1
+data$corr[(data$task == 'Retrieval') & (data$stim_spec == 'building') & (data$corr_key!=4) & (data$resp == 4)] <- 1
+data$corr_key[(data$task == 'Retrieval') & (data$stim_spec == 'vehicle') & (data$corr_key!=3)] <- 3
+data$corr_key[(data$task == 'Retrieval') & (data$stim_spec == 'building') & (data$corr_key!=4)] <- 4
+```
+
+```{r}
 enc_evs <- subset(data, task == 'Encoding', select = c('participant', 'block_num', 'trial_num', 'stim_name', 'task'))
 ```
 
@@ -113,14 +120,19 @@ data <- subset(data, select = c('participant', 'session', 'expName', 'psychopyVe
                                 'stim_spec', 'enc_stimname', 'corr_key', 'encret_corr'),
                task != 'Practice')
 rownames(data) <- NULL
-write.csv(data, '/Users/matthewdougherty/Desktop/Projects/RetGoals_Git/Piloting/RetGoals_PilotData.csv')
+write.csv(data, '/Users/matthewdougherty/Desktop/Projects/RetGoals_Git/Piloting/Phase_1/RetGoals_PilotData.csv')
 ```
 
 ## Summary Stats
 
 ```{r}
 library(tidyverse)
-data <- read.csv('/Users/matthewdougherty/Desktop/Projects/RetGoals_Git/Piloting/RetGoals_PilotData.csv')
+data <- read.csv('/Users/matthewdougherty/Desktop/Projects/RetGoals_Git/Piloting/Phase_1/RetGoals_PilotData.csv')
+```
+
+```{r}
+print(mean(subset(data, task == 'Encoding')$encret_corr))
+print(mean(subset(data, task == 'Retrieval')$corr))
 ```
 
 ```{r}
@@ -148,7 +160,7 @@ int_stat <- pivot_wider(int_stat, names_from = has_neg, values_from = performanc
 ```{r}
 summ_stats <- 
   data %>% 
-  group_by(participant, task) %>% 
+  group_by(block_type, task) %>% 
   summarize(performance = mean(corr)) %>% 
   ungroup()
 
@@ -175,7 +187,7 @@ data$plot_corr[data$task == 'Encoding'] <- data$encret_corr[data$task == 'Encodi
 ```{r}
 trial_perf <-
   data %>% 
-  subset(task %in% c('Encoding', 'Retrieval') & trial_num <16) %>% 
+  subset(task %in% c('Encoding', 'Retrieval')) %>% 
   group_by(task, trial_num) %>% 
   summarize(performance = mean(plot_corr)) %>% 
   ungroup()
